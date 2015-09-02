@@ -1,6 +1,6 @@
-# README #
+# PCD #
 
-Python shell utilities
+Python cd script for linux/unix systems
 
 A better cd: pcd
 ================
