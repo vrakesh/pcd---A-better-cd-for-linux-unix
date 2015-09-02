@@ -15,31 +15,38 @@ from colorama import Fore, Back, Style
 env_homedir = os.environ['HOME']
 #ctrl-c and ctrl-z handler
 def signal_handler(signal, frame):
+    '''Exit on Ctrl-C or Ctrl-Z
+    '''
     sys.exit(0)
+#The signal functions
 signal.signal(signal.SIGINT,signal_handler)
 signal.signal(signal.SIGTSTP, signal_handler)
 
 class Actions(object):
     """Actions to be performed by the command"""
     def __init__(self):
-        """initialize database path and history size"""
+        '''initialize database path and history size
+        '''
         self.db_file = os.path.join(env_homedir, '.cdhist.db')
         self.HIST_SIZE = 1000
         self.hist_dict = {}
         self.history = None
     def absolute_path(self, partial):
+        '''Absolute path is formed from relative path
+        '''
         return os.path.abspath(
             os.path.join(os.getcwd(), os.path.expanduser(partial))
         )
 
     def search_pattern(self, pattern):
+        '''Search for a pattern
+        '''
         plen = len(pattern)
         min_extra = float('Inf')
         match = None
         for directory in self.history:
             pos = directory.rfind(pattern)
             if pos >= 0:
-                # how many extra characters?
                 extra = len(directory) - pos - plen
                 if extra <= min_extra:
                     min_extra = extra
@@ -47,6 +54,8 @@ class Actions(object):
         return match or self.absolute_path(pattern)
 
     def read_history(self):
+        '''Read the history of directories
+        '''
         if os.path.exists(self.db_file):
             with open(self.db_file) as fh:
                 self.history = fh.read().split('\n')
@@ -56,10 +65,12 @@ class Actions(object):
             self.history = []
 
     def list_history(self, pattern = ''):
-        top_10 = self.history[:9]
+        '''list top 10 directories or directories mathing
+           pattern
+        '''
+        top_10 = self.history[-10:]
         top_10 = top_10[::-1]
         return_list = list(top_10)
-        #print(top_10)
         if (pattern != ''):
             top_10 = [s for s in top_10 if pattern in s]
             return_list = list(top_10)
@@ -74,12 +85,16 @@ class Actions(object):
 
 
     def write_history(self):
+        '''Update the history file
+        '''
         with open(self.db_file, 'w') as fh:
             if len(self.history) > (self.HIST_SIZE * 1.4):
                 self.history = self.history[-self.HIST_SIZE:]
             fh.write('\n'.join(self.history))
 
     def save_match(self, match):
+        '''Save a pattern match
+        '''
         idx = self.hist_dict.get(match)
         if idx is not None:
             self.history.pop(idx)
